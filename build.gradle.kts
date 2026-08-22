@@ -22,7 +22,6 @@ repositories {
 
 dependencies {
     minecraft(libs.minecraft)
-    minecraft(libs.yarn)
 
     implementation(libs.fabric.loader)
     implementation(libs.meteor.client)
