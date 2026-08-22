@@ -21,19 +21,11 @@ repositories {
 }
 
 dependencies {
-    // Minecraft
     minecraft(libs.minecraft)
+    minecraft(libs.yarn)
 
-    // Yarn mappings
-    mappings(variantOf(libs.yarn) {
-        classifier("v2")
-    })
-
-    // Fabric Loader
-    modImplementation(libs.fabric.loader)
-
-    // Meteor Client
-    modImplementation(libs.meteor.client)
+    implementation(libs.fabric.loader)
+    implementation(libs.meteor.client)
 }
 
 java {
@@ -70,11 +62,7 @@ tasks {
     withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
         options.release.set(21)
-
-        options.compilerArgs.add("-Xlint:deprecation")
-        options.compilerArgs.add("-Xlint:unchecked")
     }
 }
-
 
 
