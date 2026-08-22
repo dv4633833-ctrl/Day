@@ -3,9 +3,9 @@ plugins {
 }
 
 base {
-    archivesName = providers.gradleProperty("archives_base_name").get()
+    archivesName = properties["archives_base_name"] as String
     version = libs.versions.mod.version.get()
-    group = providers.gradleProperty("maven_group").get()
+    group = properties["maven_group"] as String
 }
 
 repositories {
@@ -21,28 +21,24 @@ repositories {
 }
 
 dependencies {
+    // Fabric
     minecraft(libs.minecraft)
+    mappings(variantOf(libs.yarn) { classifier("v2") })
 
-    implementation(libs.fabric.loader)
-    implementation(libs.meteor.client)
-}
+    modImplementation(libs.fabric.loader)
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(21))
-    }
+    // Meteor
+    modImplementation(libs.meteor.client)
 }
 
 tasks {
     processResources {
         val propertyMap = mapOf(
             "version" to project.version,
-            "minecraft_version" to libs.versions.minecraft.get(),
-            "jdk_version" to "21"
+            "mc_version" to libs.versions.minecraft.get()
         )
 
         inputs.properties(propertyMap)
-
         filteringCharset = "UTF-8"
 
         filesMatching("fabric.mod.json") {
@@ -51,17 +47,22 @@ tasks {
     }
 
     jar {
-        inputs.property("archivesName", base.archivesName)
+        inputs.property("archivesName", project.base.archivesName.get())
 
         from("LICENSE") {
-            rename { "${it}_${base.archivesName.get()}" }
+            rename { "${it}_${inputs.properties["archivesName"]}" }
         }
     }
 
-    withType<JavaCompile>().configureEach {
+    java {
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
+    }
+
+    withType<JavaCompile> {
         options.encoding = "UTF-8"
-        options.release.set(21)
+        options.release = 21
+        options.compilerArgs.add("-Xlint:deprecation")
+        options.compilerArgs.add("-Xlint:unchecked")
     }
 }
-
-
