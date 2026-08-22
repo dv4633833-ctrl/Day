@@ -21,19 +21,15 @@ repositories {
 }
 
 dependencies {
-    // Minecraft + Fabric
     minecraft(libs.minecraft)
     modImplementation(libs.fabric.loader)
 
-    // Meteor Client
     modImplementation(libs.meteor.client)
 }
 
 java {
     toolchain {
-        languageVersion.set(
-            JavaLanguageVersion.of(libs.versions.jdk.get().toInt())
-        )
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
@@ -42,7 +38,7 @@ tasks {
         val propertyMap = mapOf(
             "version" to project.version,
             "minecraft_version" to libs.versions.minecraft.get(),
-            "jdk_version" to libs.versions.jdk.get()
+            "jdk_version" to "21"
         )
 
         inputs.properties(propertyMap)
@@ -63,7 +59,6 @@ tasks {
     withType<JavaCompile>().configureEach {
         options.encoding = "UTF-8"
         options.release.set(21)
-
         options.compilerArgs.add("-Xlint:deprecation")
         options.compilerArgs.add("-Xlint:unchecked")
     }
