@@ -2,10 +2,13 @@ plugins {
     alias(libs.plugins.fabric.loom)
 }
 
+val archivesBaseName = providers.gradleProperty("archives_base_name").get()
+val mavenGroup = providers.gradleProperty("maven_group").get()
+
 base {
-    archivesName = properties["archives_base_name"] as String
+    archivesName = archivesBaseName
     version = libs.versions.mod.version.get()
-    group = properties["maven_group"] as String
+    group = mavenGroup
 }
 
 repositories {
@@ -21,19 +24,53 @@ repositories {
 }
 
 dependencies {
-    // Fabric
     minecraft(libs.minecraft)
     mappings(variantOf(libs.yarn) { classifier("v2") })
     modImplementation(libs.fabric.loader)
-
-    // Meteor
     modImplementation(libs.meteor.client)
+}
+
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
 }
 
 tasks {
     processResources {
         val propertyMap = mapOf(
             "version" to project.version,
+            "minecraft_version" to libs.versions.minecraft.get(),
+            "jdk_version" to "21"
+        )
+
+        inputs.properties(propertyMap)
+
+        filesMatching("fabric.mod.json") {
+            expand(propertyMap)
+        }
+    }
+
+    jar {
+        inputs.property("archivesName", archivesBaseName)
+
+        from("LICENSE") {
+            rename { "${it}_${archivesBaseName}" }
+        }
+    }
+
+    withType<JavaCompile>().configureEach {
+        options.compilerArgs.addAll(
+            listOf(
+                "-Xlint:deprecation",
+                "-Xlint:unchecked"
+            )
+        )
+    }
+}
+
+
+
             "mc_version" to libs.versions.minecraft.get()
         )
 
