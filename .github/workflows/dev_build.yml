@@ -1,5 +1,9 @@
 name: Publish Development Build
+
 on: push
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -32,3 +36,5 @@ jobs:
           prerelease: true
           files: |
             ./build/libs/*.jar
+
+
