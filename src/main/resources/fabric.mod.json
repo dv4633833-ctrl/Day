@@ -2,24 +2,20 @@
   "schemaVersion": 1,
   "id": "addon-template",
   "version": "${version}",
-  "name": "Addon Template",
-  "description": "An addon template for Meteor Client addons.",
+  "name": "Suspicious Grow",
+  "description": "Meteor Client addon that detects cactus and sweet berry bush growth.",
   "authors": [
     "seasnail"
   ],
   "contact": {
     "sources": "https://github.com/MeteorDevelopment/meteor-addon-template"
   },
-  "icon": "assets/template/icon.png",
   "environment": "client",
   "entrypoints": {
     "meteor": [
       "com.example.addon.AddonTemplate"
     ]
   },
-  "mixins": [
-    "addon-template.mixins.json"
-  ],
   "custom": {
     "meteor-client:color": "225,25,25",
     "modmenu": {
@@ -30,7 +26,7 @@
   },
   "depends": {
     "java": ">=21",
-    "minecraft": "1.21.11",
+    "minecraft": "${mc_version}",
     "meteor-client": "*"
   }
 }
