@@ -6,7 +6,7 @@ import meteordevelopment.meteorclient.commands.Command;
 import net.minecraft.client.multiplayer.ClientSuggestionProvider;
 
 /**
- * The Meteor Client command API uses the <a href="https://github.com/Mojang/brigadier">same command system as Minecraft does</a>.
+ * The Meteor Client command API uses the same command system as Minecraft does.
  */
 public class CommandExample extends Command {
     /**
@@ -18,15 +18,21 @@ public class CommandExample extends Command {
 
     @Override
     public void build(LiteralArgumentBuilder<ClientSuggestionProvider> builder) {
-        builder.executes(_ -> {
+        builder.executes(ignored -> {
             info("hi");
             return SINGLE_SUCCESS;
         });
 
-        builder.then(literal("name").then(argument("nameArgument", StringArgumentType.word()).executes(context -> {
-            String argument = StringArgumentType.getString(context, "nameArgument");
-            info("hi, " + argument);
-            return SINGLE_SUCCESS;
-        })));
+        builder.then(
+            literal("name").then(
+                argument("nameArgument", StringArgumentType.word()).executes(context -> {
+                    String argument = StringArgumentType.getString(context, "nameArgument");
+                    info("hi, " + argument);
+                    return SINGLE_SUCCESS;
+                })
+            )
+        );
     }
 }
+
+
