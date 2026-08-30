@@ -1,15 +1,15 @@
 package com.example.addon.modules;
 
 import com.example.addon.AddonTemplate;
+
 import meteordevelopment.meteorclient.events.render.Render3DEvent;
+import meteordevelopment.meteorclient.renderer.ShapeMode;
 import meteordevelopment.meteorclient.settings.BoolSetting;
 import meteordevelopment.meteorclient.settings.ColorSetting;
-import meteordevelopment.meteorclient.settings.EnumSetting;
 import meteordevelopment.meteorclient.settings.IntSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.renderer.ShapeMode;
 import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
@@ -17,149 +17,127 @@ import meteordevelopment.orbit.EventHandler;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SnowBlock;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.HashSet;
-import java.util.Set;
-
-public class SnowFinder extends Module {
+public class SnowLayer extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
+    private final SettingGroup sgLayers = settings.createGroup("Snow Layers");
     private final SettingGroup sgRender = settings.createGroup("Render");
 
-    // Range
     private final Setting<Integer> range = sgGeneral.add(new IntSetting.Builder()
         .name("range")
-        .description("How far to search for snow.")
+        .description("Horizontal distance to scan for snow.")
         .defaultValue(16)
-        .min(1)
-        .max(64)
-        .sliderRange(1, 32)
+        .range(4, 32)
+        .sliderRange(4, 20)
         .build()
     );
 
-    // Layer selection
-    private final Setting<Boolean> layer1 = sgGeneral.add(new BoolSetting.Builder()
+    private final Setting<Integer> verticalRange = sgGeneral.add(new IntSetting.Builder()
+        .name("vertical-range")
+        .description("Vertical distance to scan.")
+        .defaultValue(8)
+        .range(1, 32)
+        .sliderRange(1, 16)
+        .build()
+    );
+
+    private final Setting<Boolean> layer1 = sgLayers.add(new BoolSetting.Builder()
         .name("layer-1")
-        .description("Detect 1-layer snow.")
+        .description("Mark snow with 1 layer.")
         .defaultValue(false)
         .build()
     );
 
-    private final Setting<Boolean> layer2 = sgGeneral.add(new BoolSetting.Builder()
+    private final Setting<Boolean> layer2 = sgLayers.add(new BoolSetting.Builder()
         .name("layer-2")
-        .description("Detect 2-layer snow.")
-        .defaultValue(false)
-        .build()
-    );
-
-    private final Setting<Boolean> layer3 = sgGeneral.add(new BoolSetting.Builder()
-        .name("layer-3")
-        .description("Detect 3-layer snow.")
-        .defaultValue(false)
-        .build()
-    );
-
-    private final Setting<Boolean> layer4 = sgGeneral.add(new BoolSetting.Builder()
-        .name("layer-4")
-        .description("Detect 4-layer snow.")
-        .defaultValue(false)
-        .build()
-    );
-
-    private final Setting<Boolean> layer5 = sgGeneral.add(new BoolSetting.Builder()
-        .name("layer-5")
-        .description("Detect 5-layer snow.")
+        .description("Mark snow with 2 layers.")
         .defaultValue(true)
         .build()
     );
 
-    private final Setting<Boolean> layer6 = sgGeneral.add(new BoolSetting.Builder()
+    private final Setting<Boolean> layer3 = sgLayers.add(new BoolSetting.Builder()
+        .name("layer-3")
+        .description("Mark snow with 3 layers.")
+        .defaultValue(true)
+        .build()
+    );
+
+    private final Setting<Boolean> layer4 = sgLayers.add(new BoolSetting.Builder()
+        .name("layer-4")
+        .description("Mark snow with 4 layers.")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<Boolean> layer5 = sgLayers.add(new BoolSetting.Builder()
+        .name("layer-5")
+        .description("Mark snow with 5 layers.")
+        .defaultValue(false)
+        .build()
+    );
+
+    private final Setting<Boolean> layer6 = sgLayers.add(new BoolSetting.Builder()
         .name("layer-6")
-        .description("Detect 6-layer snow.")
+        .description("Mark snow with 6 layers.")
         .defaultValue(false)
         .build()
     );
 
-    private final Setting<Boolean> layer7 = sgGeneral.add(new BoolSetting.Builder()
+    private final Setting<Boolean> layer7 = sgLayers.add(new BoolSetting.Builder()
         .name("layer-7")
-        .description("Detect 7-layer snow.")
+        .description("Mark snow with 7 layers.")
         .defaultValue(false)
         .build()
     );
 
-    private final Setting<Boolean> layer8 = sgGeneral.add(new BoolSetting.Builder()
+    private final Setting<Boolean> layer8 = sgLayers.add(new BoolSetting.Builder()
         .name("layer-8")
-        .description("Detect 8-layer snow.")
+        .description("Mark snow with 8 layers.")
         .defaultValue(false)
         .build()
     );
 
-    // Render
     private final Setting<SettingColor> color = sgRender.add(new ColorSetting.Builder()
         .name("color")
-        .description("ESP color.")
-        .defaultValue(new SettingColor(25, 255, 25, 120))
+        .description("Color used to mark matching snow.")
+        .defaultValue(new SettingColor(0, 150, 255, 60, false))
         .build()
     );
 
-    private final Setting<ShapeMode> shapeMode = sgRender.add(new EnumSetting.Builder<ShapeMode>()
-        .name("shape-mode")
-        .description("How the snow ESP is rendered.")
-        .defaultValue(ShapeMode.Both)
+    private final Setting<Boolean> outline = sgRender.add(new BoolSetting.Builder()
+        .name("outline")
+        .description("Render an outline around matching snow.")
+        .defaultValue(true)
         .build()
     );
 
-    private final Setting<Boolean> showLayer = sgRender.add(new BoolSetting.Builder()
-        .name("show-layer")
-        .description("Show the selected snow layer in chat when found.")
-        .defaultValue(false)
-        .build()
-    );
-
-    private final Set<BlockPos> foundSnow = new HashSet<>();
-
-    public SnowFinder() {
+    public SnowLayer() {
         super(
             AddonTemplate.CATEGORY,
-            "snow-finder",
-            "Detects selected snow layer heights around you."
+            "snow-layer",
+            "Finds snow layers with selected thickness."
         );
     }
 
-    @Override
-    public void onActivate() {
-        foundSnow.clear();
-    }
-
-    @Override
-    public void onDeactivate() {
-        foundSnow.clear();
-    }
-
     @EventHandler
-    private void onRender(Render3DEvent event) {
-        MinecraftClient mc = MinecraftClient.getInstance();
-
+    private void onRender3d(Render3DEvent event) {
         if (mc.world == null || mc.player == null) return;
 
-        foundSnow.clear();
-
         BlockPos center = mc.player.getBlockPos();
+
         int r = range.get();
+        int vr = verticalRange.get();
 
         for (int x = -r; x <= r; x++) {
-            for (int y = -r; y <= r; y++) {
-                for (int z = -r; z <= r; z++) {
+            for (int z = -r; z <= r; z++) {
 
-                    if (x * x + y * y + z * z > r * r) continue;
+                if (x * x + z * z > r * r) continue;
 
+                for (int y = -vr; y <= vr; y++) {
                     BlockPos pos = center.add(x, y, z);
 
-                    if (!mc.world.isChunkLoaded(
-                        pos.getX() >> 4,
-                        pos.getZ() >> 4
-                    )) continue;
+                    if (!mc.world.isChunkLoaded(pos)) continue;
 
                     BlockState state = mc.world.getBlockState(pos);
 
@@ -169,21 +147,34 @@ public class SnowFinder extends Module {
 
                     if (!isSelected(layers)) continue;
 
-                    foundSnow.add(pos.toImmutable());
+                    double height = layers / 8.0;
+
+                    double minX = pos.getX();
+                    double minY = pos.getY();
+                    double minZ = pos.getZ();
+
+                    double maxX = minX + 1.0;
+                    double maxY = minY + height;
+                    double maxZ = minZ + 1.0;
+
+                    ShapeMode shapeMode = outline.get()
+                        ? ShapeMode.Both
+                        : ShapeMode.Sides;
+
+                    event.renderer.box(
+                        minX,
+                        minY,
+                        minZ,
+                        maxX,
+                        maxY,
+                        maxZ,
+                        color.get(),
+                        color.get(),
+                        shapeMode,
+                        0
+                    );
                 }
             }
-        }
-
-        Color espColor = new Color(color.get());
-
-        for (BlockPos pos : foundSnow) {
-            event.renderer.box(
-                pos,
-                espColor,
-                espColor,
-                shapeMode.get(),
-                0
-            );
         }
     }
 
@@ -200,6 +191,4 @@ public class SnowFinder extends Module {
             default -> false;
         };
     }
-}
-
-
+                }
