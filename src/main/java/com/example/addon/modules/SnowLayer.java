@@ -10,7 +10,6 @@ import meteordevelopment.meteorclient.settings.IntSetting;
 import meteordevelopment.meteorclient.settings.Setting;
 import meteordevelopment.meteorclient.settings.SettingGroup;
 import meteordevelopment.meteorclient.systems.modules.Module;
-import meteordevelopment.meteorclient.utils.render.color.Color;
 import meteordevelopment.meteorclient.utils.render.color.SettingColor;
 import meteordevelopment.orbit.EventHandler;
 
@@ -27,9 +26,9 @@ public class SnowLayer extends Module {
     private final Setting<Integer> range = sgGeneral.add(new IntSetting.Builder()
         .name("range")
         .description("Horizontal distance to scan for snow.")
-        .defaultValue(16)
-        .range(4, 32)
-        .sliderRange(4, 20)
+        .defaultValue(64)
+        .range(64, 128)
+        .sliderRange(64, 128)
         .build()
     );
 
@@ -116,7 +115,7 @@ public class SnowLayer extends Module {
         super(
             AddonTemplate.CATEGORY,
             "snow-layer",
-            "Finds snow layers with selected thickness."
+            "Finds nearby snow based on its layer thickness."
         );
     }
 
@@ -149,28 +148,16 @@ public class SnowLayer extends Module {
 
                     double height = layers / 8.0;
 
-                    double minX = pos.getX();
-                    double minY = pos.getY();
-                    double minZ = pos.getZ();
-
-                    double maxX = minX + 1.0;
-                    double maxY = minY + height;
-                    double maxZ = minZ + 1.0;
-
-                    ShapeMode shapeMode = outline.get()
-                        ? ShapeMode.Both
-                        : ShapeMode.Sides;
-
                     event.renderer.box(
-                        minX,
-                        minY,
-                        minZ,
-                        maxX,
-                        maxY,
-                        maxZ,
+                        pos.getX(),
+                        pos.getY(),
+                        pos.getZ(),
+                        pos.getX() + 1.0,
+                        pos.getY() + height,
+                        pos.getZ() + 1.0,
                         color.get(),
                         color.get(),
-                        shapeMode,
+                        outline.get() ? ShapeMode.Both : ShapeMode.Sides,
                         0
                     );
                 }
@@ -191,4 +178,4 @@ public class SnowLayer extends Module {
             default -> false;
         };
     }
-                }
+}
