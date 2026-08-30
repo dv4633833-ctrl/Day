@@ -1,22 +1,26 @@
 package com.example.addon;
 
-import com.example.addon.modules.SuspiciousGrow;
+import com.example.addon.modules.SnowLayer;
+
 import com.mojang.logging.LogUtils;
+
 import meteordevelopment.meteorclient.addons.GithubRepo;
 import meteordevelopment.meteorclient.addons.MeteorAddon;
 import meteordevelopment.meteorclient.systems.modules.Category;
 import meteordevelopment.meteorclient.systems.modules.Modules;
+
 import org.slf4j.Logger;
 
 public class AddonTemplate extends MeteorAddon {
     public static final Logger LOG = LogUtils.getLogger();
+
     public static final Category CATEGORY = new Category("Example");
 
     @Override
     public void onInitialize() {
-        LOG.info("Initializing SuspiciousGrow Addon");
+        LOG.info("Initializing SnowLayer Addon");
 
-        Modules.get().add(new SuspiciousGrow());
+        Modules.get().add(new SnowLayer());
     }
 
     @Override
@@ -34,8 +38,3 @@ public class AddonTemplate extends MeteorAddon {
         return new GithubRepo("MeteorDevelopment", "meteor-addon-template");
     }
 }
-
-
-
-        
-    
