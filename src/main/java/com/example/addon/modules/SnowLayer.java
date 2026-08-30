@@ -17,6 +17,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.SnowBlock;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.Heightmap;
 
 public class SnowLayer extends Module {
     private final SettingGroup sgGeneral = settings.getDefaultGroup();
@@ -32,12 +33,12 @@ public class SnowLayer extends Module {
         .build()
     );
 
-    private final Setting<Integer> verticalRange = sgGeneral.add(new IntSetting.Builder()
-        .name("vertical-range")
-        .description("Vertical distance to scan.")
-        .defaultValue(8)
-        .range(1, 32)
-        .sliderRange(1, 16)
+    private final Setting<Integer> surfaceScan = sgGeneral.add(new IntSetting.Builder()
+        .name("surface-scan")
+        .description("Extra blocks to check around the surface height.")
+        .defaultValue(4)
+        .range(1, 8)
+        .sliderRange(1, 8)
         .build()
     );
 
@@ -115,7 +116,7 @@ public class SnowLayer extends Module {
         super(
             AddonTemplate.CATEGORY,
             "snow-layer",
-            "Finds nearby snow based on its layer thickness."
+            "Finds snow based on its layer thickness, even when flying above it."
         );
     }
 
@@ -126,17 +127,32 @@ public class SnowLayer extends Module {
         BlockPos center = mc.player.getBlockPos();
 
         int r = range.get();
-        int vr = verticalRange.get();
+        int extra = surfaceScan.get();
 
         for (int x = -r; x <= r; x++) {
             for (int z = -r; z <= r; z++) {
 
                 if (x * x + z * z > r * r) continue;
 
-                for (int y = -vr; y <= vr; y++) {
-                    BlockPos pos = center.add(x, y, z);
+                int worldX = center.getX() + x;
+                int worldZ = center.getZ() + z;
 
-                    if (!mc.world.isChunkLoaded(pos)) continue;
+                if (!mc.world.isChunkLoaded(
+                    new BlockPos(worldX, center.getY(), worldZ)
+                )) {
+                    continue;
+                }
+
+                int surfaceY = mc.world.getTopY(
+                    Heightmap.Type.WORLD_SURFACE,
+                    worldX,
+                    worldZ
+                );
+
+                for (int offset = -extra; offset <= extra; offset++) {
+                    int y = surfaceY + offset;
+
+                    BlockPos pos = new BlockPos(worldX, y, worldZ);
 
                     BlockState state = mc.world.getBlockState(pos);
 
@@ -178,4 +194,4 @@ public class SnowLayer extends Module {
             default -> false;
         };
     }
-}
+            }
